@@ -5,6 +5,7 @@ const PromptImprover = () => {
   const [category, setCategory] = useState("general");
   const [improvedPrompt, setImprovedPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImproved, setIsImproved] = useState(false);
 
   const categories = [
     {
@@ -56,6 +57,7 @@ const PromptImprover = () => {
       const mockImprovedPrompt = `[${selectedCategory.label.toUpperCase()}] ${originalPrompt}\n\nImproved version: ${originalPrompt} - Enhanced with better clarity, structure, and ${category} best practices.`;
 
       setImprovedPrompt(mockImprovedPrompt);
+      setIsImproved(true);
     } catch (error) {
       console.error("Error generating improved prompt:", error);
       alert("Failed to generate improved prompt. Please try again.");
@@ -65,9 +67,10 @@ const PromptImprover = () => {
   };
 
   const handleCopy = () => {
-    if (improvedPrompt) {
-      navigator.clipboard.writeText(improvedPrompt);
-      alert("Improved prompt copied to clipboard!");
+    const textToCopy = isImproved ? improvedPrompt : originalPrompt;
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy);
+      alert("Prompt copied to clipboard!");
     }
   };
 
@@ -75,6 +78,13 @@ const PromptImprover = () => {
     setOriginalPrompt("");
     setImprovedPrompt("");
     setCategory("general");
+    setIsImproved(false);
+  };
+
+  const handleReset = () => {
+    setOriginalPrompt(improvedPrompt);
+    setImprovedPrompt("");
+    setIsImproved(false);
   };
 
   return (
@@ -106,62 +116,82 @@ const PromptImprover = () => {
         </select>
       </div>
 
-      {/* Original Prompt Input */}
+      {/* Prompt Input - Original or Improved */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Your Original Prompt
+          {isImproved ? "Improved Prompt" : "Your Original Prompt"}
         </label>
-        <textarea
-          value={originalPrompt}
-          onChange={(e) => setOriginalPrompt(e.target.value)}
-          placeholder="Enter your prompt here..."
-          rows={4}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-        />
+        <div className="relative">
+          <textarea
+            value={isImproved ? improvedPrompt : originalPrompt}
+            onChange={(e) => {
+              if (isImproved) {
+                setImprovedPrompt(e.target.value);
+              } else {
+                setOriginalPrompt(e.target.value);
+              }
+            }}
+            placeholder={
+              isImproved
+                ? "Your improved prompt..."
+                : "Enter your prompt here..."
+            }
+            rows={4}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+              isImproved ? "bg-pink-50" : "bg-white"
+            }`}
+          />
+
+          {/* Copy Icon Button - Top Right */}
+          <button
+            onClick={handleCopy}
+            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            title="Copy to clipboard"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Generate Button */}
-      <div className="text-center">
-        <button
-          onClick={handleGenerate}
-          disabled={isGenerating || !originalPrompt.trim()}
-          className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isGenerating ? "🔄 Generating..." : "✨ Generate Improved Prompt"}
-        </button>
-      </div>
-
-      {/* Improved Prompt Display */}
-      {improvedPrompt && (
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Improved Prompt
-            </label>
-            <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-              <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono">
-                {improvedPrompt}
-              </pre>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
+      {/* Action Buttons */}
+      <div className="text-center space-y-3">
+        {!isImproved ? (
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating || !originalPrompt.trim()}
+            className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          >
+            {isGenerating ? "🔄 Generating..." : "✨ Generate Improved Prompt"}
+          </button>
+        ) : (
           <div className="flex space-x-3">
             <button
-              onClick={handleCopy}
-              className="flex-1 px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition-colors"
+              onClick={handleReset}
+              className="flex-1 px-4 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition-colors"
             >
-              📋 Copy to Clipboard
+              🔄 Use as Original
             </button>
             <button
               onClick={handleClear}
-              className="flex-1 px-4 py-2 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition-colors"
+              className="flex-1 px-4 py-3 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors"
             >
               🗑️ Clear All
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Category Info */}
       <div className="bg-blue-50 p-4 rounded-md border border-blue-200">

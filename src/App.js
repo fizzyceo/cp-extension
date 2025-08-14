@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { userService } from "./userService";
 import PromptImprover from "./components/PromptImprover";
+import Library from "./components/Library";
 import UpgradePlan from "./components/UpgradePlan";
 import LoadingSpinner from "./components/LoadingSpinner";
 import LoginForm from "./components/LoginForm";
@@ -12,6 +13,7 @@ function App() {
   const [userPlan, setUserPlan] = useState(null);
   const [userData, setUserData] = useState(null);
   const [checkingAccess, setCheckingAccess] = useState(false);
+  const [activeTab, setActiveTab] = useState("prompt-improver");
 
   useEffect(() => {
     console.log("🔍 App component mounted, checking for existing session...");
@@ -207,15 +209,45 @@ function App() {
       return <UpgradePlan />;
     }
 
-    // User has access (any plan other than DISCOVER)
-    return <PromptImprover />;
+    // User has access (any plan other than DISCOVER) - Show tabbed interface
+    return (
+      <div className="space-y-4">
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab("prompt-improver")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "prompt-improver"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Prompt Improver
+          </button>
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "library"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Library
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="min-h-[400px]">
+          {activeTab === "prompt-improver" && <PromptImprover />}
+          {activeTab === "library" && <Library userId={user.id} />}
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="p-6 w-[512px] max-w-lg mx-auto bg-white rounded-xl shadow-lg">
-      <h1 className="text-3xl font-bold text-gray-800 mb-4">
-        Chrome Extension
-      </h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-4">Copy&Prompt</h1>
 
       {/* User Info Header */}
       {user && (

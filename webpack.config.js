@@ -36,6 +36,7 @@ module.exports = {
       patterns: [
         { from: "manifest.json", to: "../manifest.json" },
         { from: "public/success.html", to: "../success.html" },
+        { from: "public/js/hcaptcha-api.js", to: "../js/hcaptcha-api.js" },
       ],
     }),
     ...getHtmlPlugins(["index"]),
